@@ -1,0 +1,63 @@
+(function ($) {
+  Drupal.behaviors.csulb_team_a11y = {
+    attach: function (context, settings) {
+      $('#main-navigation-resources-link').click(function(){
+        if(!jQuery('.mobile-menu-popout').is(":visible")){
+          $(".mobile-menu-popout-link.button").click();
+          var elemAvail = setInterval(function() {
+            $elem = $('.mobile-menu-popout ul.menu li.resources a.menu-link-header');
+            if ($elem.length) {
+              $($elem).focus();
+              clearInterval(elemAvail);
+            }
+          }, 300); // check every 300ms until elem is available
+        }
+      });
+
+      // fix that will prevent tables from defaulting to a default 600px width when created by table CKEDITOR plugin. Default width could potentially cause accessibility issue.
+      if( typeof window.CKEDITOR === 'object' && typeof window.CKEDITOR !== "undefined"){
+
+        // register event
+         CKEDITOR.on( 'dialogDefinition', function( ev )
+         {
+            // Take the dialog name and its definition from the event data.
+            var dialogName = ev.data.name;
+            var dialogDefinition = ev.data.definition;
+
+            // Check if the definition is from the dialog we're interested on (the "Table" dialog).
+            if ( dialogName == 'table' )
+            {
+                // Get a reference to the "Table Info" tab.
+                infoTab = dialogDefinition.getContents( 'info' );
+                txtWidth = infoTab.get( 'txtWidth' );
+                txtWidth['default'] = "100%";
+                cmbWidthType = infoTab.get( 'cmbWidthType' );
+                txtCellPad = infoTab.get( 'txtCellPad' );
+                txtCellPad['default'] = 1;
+
+                infoTab.get('txtRows')["default"];
+                infoTab.get('txtCols')["default"] = 6;
+            }
+          });
+      }
+
+      // fix to left sidebar in unit and sub-unit pages where certain parent menu items appear as collapsed
+      setTimeout(function() {
+
+        linkItem = jQuery('.menu__link.is-active-trail.active-trail.active');
+        parentMenuItem = linkItem.parent();
+        var subMenuShowing = parentMenuItem.find('ul.menu').first().is(":visible");
+
+        if(linkItem.length && !subMenuShowing){
+            menuChevButton = parentMenuItem.find('a.expand-menu-button.toggler').first();
+            menuNotExpaned = menuChevButton.attr('aria-expanded');
+            if(menuNotExpaned){
+                menuChevButton.trigger('click');
+            }
+        }
+      }, 500);
+
+    }
+  };
+
+})(jQuery);
